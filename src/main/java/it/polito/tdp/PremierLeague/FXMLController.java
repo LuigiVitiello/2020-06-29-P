@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.PremierLeague.model.Adiacenza;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,7 +41,7 @@ public class FXMLController {
     private TextField txtMinuti; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbMese"
-    private ComboBox<?> cmbMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
     private ComboBox<?> cmbM1; // Value injected by FXMLLoader
@@ -52,12 +54,42 @@ public class FXMLController {
 
     @FXML
     void doConnessioneMassima(ActionEvent event) {
-    	
+    	this.txtResult.clear();
+    	if (!model.isGrafoCreato()) {
+    		this.txtResult.setText("Errore, crea prima il grafo");
+    		return;
+    	}
+    	List<Adiacenza> conn= new ArrayList<>();
+    	conn=model.ConessioneMax();
+    	if (conn==null) {
+    		this.txtResult.setText("errore");
+    		return;
+    	}
+    	for (Adiacenza a : conn) {
+    		this.txtResult.appendText(a.toString()+"\n");
+    	}
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	
+    	this.txtResult.clear();
+    	String minString= this.txtMinuti.getText();
+    	int min;
+    	try {
+    		min= Integer.parseInt(minString);
+    	} catch(NumberFormatException e) {
+    		this.txtResult.setText("Errore, inseire un numero di minuti");
+    		return;
+    	}
+    	Integer mese= this.cmbMese.getValue();
+    	if (mese==null) {
+    		this.txtResult.setText("Errore, selezionare un mese");
+    		return;
+    	}
+    	model.creaGrafo(min, mese);
+    	this.txtResult.setText("GRAFO CREATO\n");
+    	this.txtResult.appendText("# vertici: "+model.getNumVertici());
+    	this.txtResult.appendText("\n# archi: "+model.getNumArchi());
     }
 
     @FXML
@@ -79,7 +111,9 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
-  
+    	for (int i=1; i<=12; i++) {
+    		this.cmbMese.getItems().add(i);
+    	}
     }
     
     
