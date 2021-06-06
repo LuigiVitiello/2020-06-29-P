@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Adiacenza;
+import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -44,10 +45,10 @@ public class FXMLController {
     private ComboBox<Integer> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
-    private ComboBox<?> cmbM1; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM2"
-    private ComboBox<?> cmbM2; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -90,10 +91,42 @@ public class FXMLController {
     	this.txtResult.setText("GRAFO CREATO\n");
     	this.txtResult.appendText("# vertici: "+model.getNumVertici());
     	this.txtResult.appendText("\n# archi: "+model.getNumArchi());
+    	
+    	this.cmbM1.getItems().addAll(this.model.getVertici());
+    	this.cmbM2.getItems().addAll(this.model.getVertici());
     }
 
     @FXML
     void doCollegamento(ActionEvent event) {
+    	
+    	Match m1 = this.cmbM1.getValue();
+    	Match m2 = this.cmbM2.getValue();
+    	if(m1== null)
+    	{
+    		this.txtResult.setText("Scegliere un match di partenza");
+    		return ;
+    	}
+    	if(m2== null)
+    	{
+    		this.txtResult.setText("Scegliere un match di destinazione");
+    		return ;
+    	}
+    	if(m1.equals(m2))
+    	{
+    		this.txtResult.setText("Scegliere due match diversi");
+    		return ;
+    	}
+    	
+    	if(!this.model.isGrafoCreato()) {
+    		this.txtResult.setText("Prima creare il grafo");
+    		return ;
+    	}
+    	
+    	this.txtResult.appendText("\nPercorso:\n");
+    	for(Match m: this.model.doCollegamento(m1, m2)) {
+    		this.txtResult.appendText(m.toString()+"\n");
+    	}
+    	this.txtResult.appendText("Peso: "+this.model.getPeso());
     	
     }
 

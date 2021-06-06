@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -19,6 +20,9 @@ public class Model {
 	private Map<Integer,Match> idMap;
 	private List<Adiacenza> adiacenze;
 	private boolean grafoCreato;
+	private List<Match> percorso;
+	private int peso;
+	private int max;
 	
 	public Model() {
 		this.dao = new PremierLeagueDAO();
@@ -71,4 +75,67 @@ public class Model {
 		return best;
 	}
 	
+	public Set<Match> getVertici(){
+		return this.grafo.vertexSet();
+	}
+	
+	/*
+	 * creo lista adiacenze
+	 *  richiamo ricorsione (lista di match)
+	 *  
+	 *  
+	 *  condizione ultimo di parziale = m2
+	 *     se peso > max salvo il cammino
+	 *     
+	 *  else
+	 *    per tutti i successori di m1
+	 *       if adiacenze !contiene partita tra m1 e m succ
+	 *          aggiungo adiacenza ad adiacenze usate
+	 *          aggiungo succ a parziale
+	 *          ricorsione
+	 *          remove
+	 */
+	
+	public List<Match> doCollegamento(Match partenza,Match destinazione) {
+		List<Match> parziale = new ArrayList<Match>();
+		parziale.add(partenza);
+	    max =0;
+		List<Adiacenza> adiacenzeUsate = new ArrayList<Adiacenza>();
+		peso=0;
+		percorso = new ArrayList<Match>();
+		cerca(partenza,destinazione,parziale,adiacenzeUsate);
+		
+		return percorso;
+	}
+
+	private void cerca(Match partenza, Match destinazione, List<Match> parziale, List<Adiacenza> adiacenzeUsate) {
+		if(parziale.get(parziale.size()-1).equals(destinazione)) {
+			if(peso>max) {
+				max = peso;
+				percorso = new ArrayList<Match>(parziale);
+			} 
+		} else {
+			
+			for(Match succ: Graphs.neighborListOf(this.grafo, partenza)) {
+				Adiacenza a = new Adiacenza(partenza,succ,(int)this.grafo.getEdgeWeight(this.grafo.getEdge(partenza, succ)));
+				Adiacenza a2 = new Adiacenza(succ,partenza,(int)this.grafo.getEdgeWeight(this.grafo.getEdge(partenza, succ)));
+		        if(!adiacenzeUsate.contains(a) && !adiacenzeUsate.contains(a2) && !parziale.contains(succ)) {
+		        	adiacenzeUsate.add(a);
+		        	adiacenzeUsate.add(a2);
+		        	peso+= a.getPeso();
+		        	parziale.add(succ);
+		        	cerca(succ,destinazione,parziale,adiacenzeUsate);
+		        	
+		        	peso-=a.getPeso();
+		        	parziale.remove(succ);
+		        	
+		        }
+			}
+		}
+		
+	}
+	
+	public int getPeso() {
+		return max;
+	}
 }
